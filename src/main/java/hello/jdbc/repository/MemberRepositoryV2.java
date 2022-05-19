@@ -88,6 +88,42 @@ public class MemberRepositoryV2 {
     }
 
 
+    public Member findById(Connection conn, String memberId) throws SQLException {
+        String sql = "select * from member where member_id = ?";
+
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+
+        try {
+//            conn = getConnection();  // 이걸 쓰면 새로운 세션을 생성한다.
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, memberId);
+
+
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                Member member = new Member();
+                member.setMemberId(rs.getString("member_id"));
+                member.setMoney(rs.getInt("money"));
+                return member;
+            } else {
+                throw new NoSuchElementException("member not fount memberId = " + memberId);
+            }
+
+
+        } catch (SQLException e) {
+            log.error("db error", e);
+            throw e;
+        } finally {
+            // connection은 여기서 닫지 않는다.
+            JdbcUtils.closeResultSet(rs);
+            JdbcUtils.closeStatement(pstmt);
+        }
+    }
+
+
     public void update(String memberId, int money) throws SQLException {
         String sql = "update member set money = ? where member_id = ?";
 
@@ -109,6 +145,29 @@ public class MemberRepositoryV2 {
             throw e;
         } finally {
             close(conn, pstmt, null);
+        }
+    }
+
+    public void update(Connection conn, String memberId, int money) throws SQLException {
+        String sql = "update member set money = ? where member_id = ?";
+
+        PreparedStatement pstmt = null;
+
+        try {
+            pstmt = conn.prepareStatement(sql);
+
+            pstmt.setInt(1, money);
+            pstmt.setString(2, memberId);
+
+            int resultSize = pstmt.executeUpdate();
+            log.info("resultSize = {} ", resultSize);
+
+        } catch (SQLException e) {
+            log.info("db error ", e);
+            throw e;
+        } finally {
+            // connection은 여기서 닫지 않는다.
+            JdbcUtils.closeStatement(pstmt);
         }
     }
 
