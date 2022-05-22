@@ -5,7 +5,6 @@ import hello.jdbc.repository.MemberRepositoryV3;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
@@ -29,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @Slf4j
 @SpringBootTest
-class MemberServiceV3_3Test {
+class MemberServiceV3_4Test {
 
 
     public static final String MEMBER_A = "memberA";
@@ -45,20 +44,16 @@ class MemberServiceV3_3Test {
     // 스프링 부트가 자동으로 만들어주는 빈들에 추가로 빈을 추가해 줄 수 있다.
     @TestConfiguration
     static class testConfig {
-        @Bean
-        DataSource dataSource() {
-            return new DriverManagerDataSource(URL, USERNAME, PASSWORD);
-        }
 
-        // 프록시 도입 후 AOP에서 얘를 호출하기 때문에 이렇게 빈으로 등록해야 하는 점이 있다.
-        @Bean
-        PlatformTransactionManager transactionManager() {
-            return new DataSourceTransactionManager(dataSource());
+        private final DataSource dataSource;
+
+        public testConfig(DataSource dataSource) {
+            this.dataSource = dataSource;
         }
 
         @Bean
         MemberRepositoryV3 memberRepositoryV3() {
-            return new MemberRepositoryV3(dataSource());
+            return new MemberRepositoryV3(dataSource);
         }
 
         @Bean
